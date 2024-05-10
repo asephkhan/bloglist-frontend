@@ -18,4 +18,30 @@ const create = async (newBlog) => {
   const response = axios.post(baseUrl, newBlog, config)
   return response.data
 }
-export default { getAll, create, setToken }
+
+const update = async (id, newBlog) => {
+  try {
+    const response = await axios.put(`${baseUrl}/${id}`, newBlog);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating blog with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+const deleteBlog = async (id) => {
+  const config = {
+    headers: {Authorization: token}
+  }
+  try{
+    const response = await axios.delete(`${baseUrl}/${id}`, config)
+    return response.data
+  }catch(error){
+    console.log('Error deleting blog with ${id}');
+  }
+}
+
+
+
+
+export default { getAll, create, setToken, update, deleteBlog }

@@ -60,6 +60,12 @@ const App = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm(`would you like to remove this blog?`)){
+      await blogService.deleteBlog(id)
+      setBlogs(blogs.filter(blog => blog.id !== id));
+    } 
+  };
   const loginForm = () => (
     <>
       <LoginForm
@@ -80,8 +86,8 @@ const App = () => {
         </Toglabble>
       </div>
       <div>
-        {blogs.map((blog) => (
-          <Blog key={blog.id} blog={blog} user={user} />
+        {blogs.sort((a, b) => b.likes - a.likes).map((blog) => (
+          <Blog key={blog.id} blog={blog} user={user} handleDelete={handleDelete} />
         ))}
       </div>
     </>

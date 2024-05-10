@@ -1,6 +1,10 @@
-import React, {useState} from 'react'
+import  {useState} from 'react'
+import PropTypes from 'prop-types'
+
+
 
 const Toglabble = (props) => {
+
     const [visible, setVisible] = useState(false)
 
     const hideWhenVisible = {display: visible? 'none' : ''}
@@ -21,5 +25,10 @@ const Toglabble = (props) => {
     </div>
   )
 }
+
+Toglabble.propTypes = {
+  buttonLabel: PropTypes.string,
+  children: PropTypes.ReactNode
+  }
 
 export default Toglabble
