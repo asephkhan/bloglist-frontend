@@ -5,19 +5,23 @@ import loginServices from "./services/login";
 import Toglabble from "./components/Toglabble";
 import LoginForm from "./components/LoginForm";
 import BlogForm from "./components/BlogForm";
+import { useNotification } from "./notificationContext";
+import { useQuery } from "@tanstack/react-query";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const { state: notification, dispatch } = useNotification();
 
-
-
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+  const {
+    data: blogs,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["blogs"],
+    queryFn: blogService.getAll,
+  });
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
@@ -41,30 +45,43 @@ const App = () => {
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setErrorMessage("Wrong Credentials");
+      dispatch({
+        type: "SET_NOTIFICATION",
+        payload: { message: "invalid username or password", type: "error" },
+      });
       setTimeout(() => {
-        setErrorMessage(null);
+        dispatch({ type: "CLEAR_NOTIFICATION" });
       }, 3000);
     }
   };
 
   const handleCreateBlog = async (blogObject) => {
     try {
-      blogService.create(blogObject);
-      setBlogs(blogs.concat());
-    } catch (exception) {
-      setErrorMessage("blog not created");
+      await blogService.create(blogObject);
+      setBlogs(blogs.concat(blogObject));
+      dispatch({
+        type: "SET_NOTIFICATION",
+        payload: { message: "blog successfully created", type: "success" },
+      });
       setTimeout(() => {
-        setErrorMessage(null);
+        dispatch({ type: "CLEAR_NOTIFICATION" });
+      }, 3000);
+    } catch (exception) {
+      dispatch({
+        type: "SET_NOTIFICATION",
+        payload: { message: "blog not created", type: "error" },
+      });
+      setTimeout(() => {
+        dispatch({ type: "CLEAR_NOTIFICATION" });
       }, 3000);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm(`would you like to remove this blog?`)){
-      await blogService.deleteBlog(id)
-      setBlogs(blogs.filter(blog => blog.id !== id));
-    } 
+    if (window.confirm(`would you like to remove this blog?`)) {
+      await blogService.deleteBlog(id);
+      setBlogs(blogs.filter((blog) => blog.id !== id));
+    }
   };
   const loginForm = () => (
     <>
@@ -81,14 +98,21 @@ const App = () => {
   const blogListForm = () => (
     <>
       <div>
-        <Toglabble buttonLabel={'create'} >
+        <Toglabble buttonLabel={"create"}>
           <BlogForm createBlog={handleCreateBlog} />
         </Toglabble>
       </div>
       <div>
-        {blogs.sort((a, b) => b.likes - a.likes).map((blog) => (
-          <Blog key={blog.id} blog={blog} user={user} handleDelete={handleDelete} />
-        ))}
+        {blogs
+          .sort((a, b) => b.likes - a.likes)
+          .map((blog) => (
+            <Blog
+              key={blog.id}
+              blog={blog}
+              user={user}
+              handleDelete={handleDelete}
+            />
+          ))}
       </div>
     </>
   );
@@ -100,8 +124,11 @@ const App = () => {
 
   return (
     <>
-      {errorMessage !== null && errorMessage}
-
+      {notification.message && (
+        <div style={{ color: notification.type === "error" ? "red" : "green" }}>
+          {notification.message}
+        </div>
+      )}
       {user === null ? (
         loginForm()
       ) : (
@@ -111,7 +138,13 @@ const App = () => {
             {user.username} logged-in
             <button onClick={handleLogout}>logout</button>
           </p>
-          {blogListForm()}
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : isError ? (
+            <p>Error fetching blogs. Please try again later.</p>
+          ) : (
+            blogListForm()
+          )}
         </div>
       )}
     </>
