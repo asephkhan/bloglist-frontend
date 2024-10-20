@@ -6,13 +6,14 @@ import Toglabble from "./components/Toglabble";
 import LoginForm from "./components/LoginForm";
 import BlogForm from "./components/BlogForm";
 import { useNotification } from "./notificationContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const { state: notification, dispatch } = useNotification();
+  const queryClient = useQueryClient();
 
   const {
     data: blogs,
@@ -21,6 +22,20 @@ const App = () => {
   } = useQuery({
     queryKey: ["blogs"],
     queryFn: blogService.getAll,
+  });
+
+  const newBlogMutation = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
+
+  const deleteBlogMutation = useMutation({
+    mutationFn: blogService.deleteBlog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
   });
 
   useEffect(() => {
@@ -57,8 +72,7 @@ const App = () => {
 
   const handleCreateBlog = async (blogObject) => {
     try {
-      await blogService.create(blogObject);
-      setBlogs(blogs.concat(blogObject));
+      newBlogMutation.mutate(blogObject);
       dispatch({
         type: "SET_NOTIFICATION",
         payload: { message: "blog successfully created", type: "success" },
@@ -79,8 +93,7 @@ const App = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm(`would you like to remove this blog?`)) {
-      await blogService.deleteBlog(id);
-      setBlogs(blogs.filter((blog) => blog.id !== id));
+      deleteBlogMutation.mutate(id);
     }
   };
   const loginForm = () => (

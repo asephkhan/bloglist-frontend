@@ -1,11 +1,18 @@
 import { useState } from "react";
 import blogService from "../services/blogs";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 
 const Blog = ({ blog, user, handleDelete }) => {
   const [visible, setVisible] = useState(false);
+  const queryClient = useQueryClient()
 
-  const [, setLikes] = useState(null);
+
+  const updateBlogMutation = useMutation({mutationFn: ({id, updatedBlog}) =>  blogService.update(id, updatedBlog),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['blogs']})
+    } 
+  })
 
   const hideWhenVisible = {
     display: visible ? "none" : "",
@@ -28,10 +35,8 @@ const Blog = ({ blog, user, handleDelete }) => {
 
   const increaseLikes = async (e) => {
     e.preventDefault();
-    const updatedLikes = blog.likes++;
-    setLikes(updatedLikes);
-    const newBlog = { ...blog, updatedLikes };
-    await blogService.update(blog.id, newBlog);
+    const updatedBlog = { ...blog, likes: blog.likes + 1 };
+    updateBlogMutation.mutate({ id: blog.id, updatedBlog });
   };
 
   return (
@@ -65,7 +70,7 @@ const Blog = ({ blog, user, handleDelete }) => {
 
 Blog.propTypes = {
   blog: PropTypes.object,
-  user: PropTypes.string.isRequired,
+  user: PropTypes.object.isRequired,
   handleDelete: PropTypes.func,
 };
 
