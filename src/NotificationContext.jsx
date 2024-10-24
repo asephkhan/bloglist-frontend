@@ -15,7 +15,7 @@ const notificationReducer = (state, action) => {
     case ACTIONS.SET_NOTIFICATION:
       return { message: action.payload.message, type: action.payload.type };
     case ACTIONS.CLEAR_NOTIFICATION:
-      return { message: null, type: null };
+      return initialState
     default:
       return state;
   }

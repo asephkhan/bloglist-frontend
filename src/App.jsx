@@ -7,11 +7,13 @@ import LoginForm from "./components/LoginForm";
 import BlogForm from "./components/BlogForm";
 import { useNotification } from "./notificationContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthentication, ACTIONS } from "./UserAuthenticationContext";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
+
+  const { state: authState, dispatch: authDispatch} = useAuthentication()
   const { state: notification, dispatch } = useNotification();
   const queryClient = useQueryClient();
 
@@ -42,10 +44,10 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+      authDispatch({type: ACTIONS.LOGIN_USER, payload: {user, token: user.token}})
       blogService.setToken(user.token);
     }
-  }, []);
+  }, [authDispatch]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -56,7 +58,7 @@ const App = () => {
       });
       window.localStorage.setItem("loggedBloglistUser", JSON.stringify(user));
       blogService.setToken(user.token);
-      setUser(user);
+      authDispatch({type: ACTIONS.LOGIN_USER, payload: {user: user, token: user.token}})
       setUsername("");
       setPassword("");
     } catch (exception) {
@@ -68,6 +70,12 @@ const App = () => {
         dispatch({ type: "CLEAR_NOTIFICATION" });
       }, 3000);
     }
+  };
+
+  const handleLogout = () => {
+    window.localStorage.clear();
+    authDispatch({type: ACTIONS.LOGOUT_USER})
+    blogService.setToken(null)
   };
 
   const handleCreateBlog = async (blogObject) => {
@@ -122,7 +130,7 @@ const App = () => {
             <Blog
               key={blog.id}
               blog={blog}
-              user={user}
+              user={authState.user}
               handleDelete={handleDelete}
             />
           ))}
@@ -130,10 +138,7 @@ const App = () => {
     </>
   );
 
-  const handleLogout = () => {
-    window.localStorage.clear();
-    setUser(null);
-  };
+
 
   return (
     <>
@@ -142,13 +147,13 @@ const App = () => {
           {notification.message}
         </div>
       )}
-      {user === null ? (
+      {authState.user === null ? (
         loginForm()
       ) : (
         <div>
           <h2>blogs</h2>
           <p>
-            {user.username} logged-in
+            {authState.username} logged-in
             <button onClick={handleLogout}>logout</button>
           </p>
           {isLoading ? (
