@@ -8,12 +8,14 @@ import BlogForm from "./components/BlogForm";
 import { useNotification } from "./notificationContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthentication, ACTIONS } from "./UserAuthenticationContext";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Users from "./Users";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const { state: authState, dispatch: authDispatch} = useAuthentication()
+  const { state: authState, dispatch: authDispatch } = useAuthentication();
   const { state: notification, dispatch } = useNotification();
   const queryClient = useQueryClient();
 
@@ -44,7 +46,10 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      authDispatch({type: ACTIONS.LOGIN_USER, payload: {user, token: user.token}})
+      authDispatch({
+        type: ACTIONS.LOGIN_USER,
+        payload: { user, token: user.token },
+      });
       blogService.setToken(user.token);
     }
   }, [authDispatch]);
@@ -58,7 +63,10 @@ const App = () => {
       });
       window.localStorage.setItem("loggedBloglistUser", JSON.stringify(user));
       blogService.setToken(user.token);
-      authDispatch({type: ACTIONS.LOGIN_USER, payload: {user: user, token: user.token}})
+      authDispatch({
+        type: ACTIONS.LOGIN_USER,
+        payload: { user: user, token: user.token },
+      });
       setUsername("");
       setPassword("");
     } catch (exception) {
@@ -74,8 +82,8 @@ const App = () => {
 
   const handleLogout = () => {
     window.localStorage.clear();
-    authDispatch({type: ACTIONS.LOGOUT_USER})
-    blogService.setToken(null)
+    authDispatch({ type: ACTIONS.LOGOUT_USER });
+    blogService.setToken(null);
   };
 
   const handleCreateBlog = async (blogObject) => {
@@ -138,34 +146,40 @@ const App = () => {
     </>
   );
 
-
-
   return (
     <>
-      {notification.message && (
-        <div style={{ color: notification.type === "error" ? "red" : "green" }}>
-          {notification.message}
-        </div>
-      )}
-      {authState.user === null ? (
-        loginForm()
-      ) : (
+      <Router>
         <div>
-          <h2>blogs</h2>
-          <p>
-            {authState.username} logged-in
-            <button onClick={handleLogout}>logout</button>
-          </p>
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : isError ? (
-            <p>Error fetching blogs. Please try again later.</p>
-          ) : (
-            blogListForm()
-          )}
+        {notification.message && (
+          <div
+            style={{ color: notification.type === "error" ? "red" : "green" }}
+          >
+            {notification.message}
+          </div>
+        )}
+        {authState.user === null ? (
+          loginForm()
+        ) : (
+          <div>
+            <h2>blogs</h2>
+            <p>
+              {authState.username} logged-in
+              <button onClick={handleLogout}>logout</button>
+            </p>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : isError ? (
+              <p>Error fetching blogs. Please try again later.</p>
+            ) : (
+              blogListForm()
+            )}
+          </div>
+        )}
+        <Routes>
+          <Route path="/users" element={<Users />} />
+        </Routes>
         </div>
-      )}
-      
+      </Router>
     </>
   );
 };
