@@ -150,34 +150,37 @@ const App = () => {
     <>
       <Router>
         <div>
-        {notification.message && (
-          <div
-            style={{ color: notification.type === "error" ? "red" : "green" }}
-          >
-            {notification.message}
-          </div>
-        )}
-        {authState.user === null ? (
-          loginForm()
-        ) : (
-          <div>
-            <h2>blogs</h2>
-            <p>
-              {authState.username} logged-in
-              <button onClick={handleLogout}>logout</button>
-            </p>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : isError ? (
-              <p>Error fetching blogs. Please try again later.</p>
-            ) : (
-              blogListForm()
-            )}
-          </div>
-        )}
-        <Routes>
-          <Route path="/users" element={<Users />} />
-        </Routes>
+          {notification.message && (
+            <div
+              style={{ color: notification.type === "error" ? "red" : "green" }}
+            >
+              {notification.message}
+            </div>
+          )}
+          {authState.user === null ? (
+            loginForm()
+          ) : (
+            <div>
+              <h2>blogs</h2>
+              <p>{authState.user.username} logged-in</p>
+              <p>
+                <button onClick={handleLogout}>logout</button>
+              </p>
+
+              {isLoading ? (
+                <p>Loading...</p>
+              ) : isError ? (
+                <p>Error fetching blogs. Please try again later.</p>
+              ) : (
+                blogListForm()
+              )}
+            </div>
+          )}
+          <Routes>
+            <Route path="/users" element={<Users blogs={blogs} />} />
+            <Route path="/" />
+            <Route path="/user/:id" />
+          </Routes>
         </div>
       </Router>
     </>

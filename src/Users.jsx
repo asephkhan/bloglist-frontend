@@ -1,20 +1,39 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
+const Users = ({ blogs }) => {
+  const userBlogCount = {};
 
-const Users = () => {
+  blogs?.forEach((blog) => {
+    const user = blog.user;
+    if (user) {
+      userBlogCount[user.username] = {
+        username: user.username,
+        userId: user._id,
+        count: (userBlogCount[user.username]?.count || 0) + 1,
+        
+      };
+      console.log('blogs', blogs)
+    }
+  });
+
   return (
     <div>
-      <h2>Users</h2>
       <table>
         <thead>
           <tr>
-            <th>Name</th>
+            <h2>Users</h2>
             <th>Blogs Created</th>
           </tr>
         </thead>
-        <tbody>
-         
-        </tbody>
+        {Object.values(userBlogCount).map(( user) => (
+          <tbody>
+            <tr>
+              <td><Link to={user._id}>{user.username}</Link></td>
+              <td>{user.count}</td>
+            </tr>
+          </tbody>
+        ))}
       </table>
     </div>
   );
