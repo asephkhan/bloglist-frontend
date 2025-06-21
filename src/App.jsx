@@ -9,7 +9,8 @@ import { useNotification } from "./notificationContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthentication, ACTIONS } from "./UserAuthenticationContext";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Users from "./Users";
+import Users from "./components/Users";
+import User from "./components/User";
 
 const App = () => {
   const [username, setUsername] = useState("");
@@ -179,7 +180,7 @@ const App = () => {
           <Routes>
             <Route path="/users" element={<Users blogs={blogs} />} />
             <Route path="/" />
-            <Route path="/user/:id" />
+            <Route path="/user/:id" element={<User blogs={blogs} />} />
           </Routes>
         </div>
       </Router>

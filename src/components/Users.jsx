@@ -11,9 +11,7 @@ const Users = ({ blogs }) => {
         username: user.username,
         userId: user._id,
         count: (userBlogCount[user.username]?.count || 0) + 1,
-        
       };
-      console.log('blogs', blogs)
     }
   });
 
@@ -26,10 +24,10 @@ const Users = ({ blogs }) => {
             <th>Blogs Created</th>
           </tr>
         </thead>
-        {Object.values(userBlogCount).map(( user) => (
+        {Object.values(userBlogCount).map((user) => (
           <tbody>
             <tr>
-              <td><Link to={user._id}>{user.username}</Link></td>
+              <Link to={`/user/${user.userId}`}>{user.username}</Link>
               <td>{user.count}</td>
             </tr>
           </tbody>

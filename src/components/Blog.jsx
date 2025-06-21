@@ -2,6 +2,7 @@ import { useState } from "react";
 import blogService from "../services/blogs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 
 const Blog = ({ blog, user, handleDelete }) => {
   const [visible, setVisible] = useState(false);
@@ -41,9 +42,9 @@ const Blog = ({ blog, user, handleDelete }) => {
 
   return (
     <div style={blogStyle}>
-      <div style={hideWhenVisible}>
-        {blog.title}
-        {blog.author}
+      <div style={hideWhenVisible}><Link to={`/blogs/${blog.id}`}>{blog.title}
+        {blog.author}</Link>
+
         <button type="submit" onClick={visibility}>
           view
         </button>
