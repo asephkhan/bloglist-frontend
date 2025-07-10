@@ -11,6 +11,7 @@ import { useAuthentication, ACTIONS } from "./UserAuthenticationContext";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Users from "./components/Users";
 import User from "./components/User";
+import BlogView from "./components/BlogView";
 
 const App = () => {
   const [username, setUsername] = useState("");
@@ -136,12 +137,11 @@ const App = () => {
         {blogs
           .sort((a, b) => b.likes - a.likes)
           .map((blog) => (
-            <Blog
-              key={blog.id}
-              blog={blog}
-              user={authState.user}
-              handleDelete={handleDelete}
-            />
+            <div key={blog.id}>
+              <Link to={`/blog/${blog.id}`}>
+                {blog.title} {blog.author}
+              </Link>
+            </div>
           ))}
       </div>
     </>
@@ -158,6 +158,7 @@ const App = () => {
               {notification.message}
             </div>
           )}
+
           {authState.user === null ? (
             loginForm()
           ) : (
@@ -165,7 +166,9 @@ const App = () => {
               <h2>blogs</h2>
               <p>{authState.user.username} logged-in</p>
               <p>
-                <button onClick={handleLogout}>logout</button>
+                <button class="bg-red-200" onClick={handleLogout}>
+                  logout
+                </button>
               </p>
 
               {isLoading ? (
@@ -181,6 +184,7 @@ const App = () => {
             <Route path="/users" element={<Users blogs={blogs} />} />
             <Route path="/" />
             <Route path="/user/:id" element={<User blogs={blogs} />} />
+            <Route path="/blog/:id" element={<BlogView blogs={blogs} />} />
           </Routes>
         </div>
       </Router>
